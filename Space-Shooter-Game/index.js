@@ -49,6 +49,7 @@ function updateFrames() {
 
 setInterval(updateFrames, 1000 / 30);
 
+// update player information
 const scoreValue = document.querySelector(".scoreValue");
 const bulletsValue = document.querySelector(".bulletsValue");
 const hpValue = document.querySelector(".hpValue");
@@ -57,6 +58,14 @@ function updatePlayerInfo() {
     scoreValue.innerText = player.score;
     bulletsValue.innerText = player.bullets;
     hpValue.innerText = player.hp;
+}
+
+// Random number
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min);
 }
 
 function game() {
@@ -80,13 +89,73 @@ function playerMove() {
         player.x += 0;
     }
 }
+function gameOver() {
+    if (player.hp <= 0) {
+        location.reload();
+    }
 
+}
 function update() {
     playerMove();
     updatePlayerInfo();
+    deleteAsteroidArr();
+    gameOver();
+}
+
+// Render
+
+const asteroidImg = new Image();
+asteroidImg.src = 'image/asteroidImg.jpg';
+let asteroidArr = [];
+let timer = 0;
+
+function movement(asteroid) {
+    asteroid.rotate += 0.5;
+    asteroid.y += asteroid.dy;
+
+}
+
+
+function renderAsteroidArr() {
+    timer++;
+    if (timer % 20 === 0) {
+        asteroidArr.push({
+            x: getRandomInt(50, canvas.width),
+            y: -20, w: 50, h: 50,
+            dy: getRandomInt(3, 7),
+            rotate: 0
+        });
+    }
+    for (let i in asteroidArr) {
+        movement(asteroidArr[i]);
+        ctx.save();
+        ctx.translate(asteroidArr[i].x, asteroidArr[i].y);
+        ctx.rotate(asteroidArr[i].rotate);
+        ctx.drawImage(asteroidImg, -asteroidArr[i].w / 2, -asteroidArr[i].h / 2, asteroidArr[i].w, asteroidArr[i].h);
+        ctx.restore();
+    }
+
+}
+function deleteAsteroidArr() {
+
+    for (let i in asteroidArr) {
+        if (asteroidArr[i].y > 770) {
+            asteroidArr.splice(i, 1);
+            player.score++;
+        }
+        if (player.x <= asteroidArr[i].x &&
+            player.x + player.w >= asteroidArr[i].x &&
+            player.y <= asteroidArr[i].y) {
+            player.hp--;
+            asteroidArr.splice(i, 1);
+        }
+    }
+
 }
 
 function render() {
 
-
+    ctx.beginPath();
+    renderAsteroidArr();
+    ctx.closePath();
 }
