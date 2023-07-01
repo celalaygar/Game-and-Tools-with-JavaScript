@@ -49,7 +49,102 @@ function updateFrames() {
 
 setInterval(updateFrames, 1000 / 30);
 
-// update player information
+
+// control bullet ---------------------------------------------------------------------------
+const bulletImg = new Image();
+bulletImg.src = 'image/bullet.jpg';
+
+let bulletArr = [];
+document.addEventListener("keydown", (e) => {
+    if (e.keyCode === 32 && player.bullets > 0) {
+        bulletArr.push({
+            x: player.x + 50,
+            y: player.y,
+            w: 20,
+            h: 50,
+        });
+        player.bullets--;
+    }
+});
+
+function moveBullets() {
+    for (let i in bulletArr) {
+        bulletArr[i].y -= 20;
+    }
+}
+function deleteBullets() {
+    for (let i in bulletArr) {
+        if (bulletArr[i].y <= -50) {
+            bulletArr.splice(i, 1);
+        }
+    }
+}
+function bulletsCollision() {
+    if (bulletArr.length > 0) {
+        checkBulletsCollision();
+    }
+}
+function checkBulletsCollision() {
+    for (let i in bulletArr) {
+        for (let a in asteroidArr) {
+            if (bulletArr[i].x + 20 >= asteroidArr[a].x - 20 &&
+                bulletArr[i].x + 20 <= asteroidArr[a].x + asteroidArr[a].w &&
+                bulletArr[i].y <= asteroidArr[a].y + 20) {
+                asteroidArr.splice(a, 1);
+            }
+        }
+    }
+}
+function renderBullets() {
+    for (let i in bulletArr) {
+        ctx.drawImage(bulletImg, bulletArr[i].x, bulletArr[i].y, bulletArr[i].w, bulletArr[i].h);
+    }
+    moveBullets();
+    deleteBullets();
+    bulletsCollision();
+}
+
+
+// bonus bullet ---------------------------------------------------------------------------
+const bonusBulletImg = new Image();
+bonusBulletImg.src = 'image/bullet.jpg';
+
+let bulletSpawnTimer = 0;
+const bullet = {
+    x: getRandomInt(50, 650),
+    y: 50,
+    w: 50,
+    h: 50,
+    dy: 3,
+};
+
+function reSpawnBonusBullet() {
+
+    bullet.y = getRandomInt(-1000, -1500);
+    bullet.x = getRandomInt(50, 650);
+}
+function moveBonusBullet() {
+
+    bullet.y += bullet.dy;
+    if (bullet.y > 750) {
+        reSpawnBonusBullet();
+    }
+}
+function collisionBonusBullet() {
+
+    bullet.y += bullet.dy;
+    if (player.x <= bullet.x && player.x + player.w >= bullet.x && player.y <= bullet.y) {
+        reSpawnBonusBullet();
+        player.bullets++;
+    }
+}
+function renderBonusBullet() {
+    ctx.drawImage(bonusBulletImg, bullet.x, bullet.y, bullet.w, bullet.h);
+    moveBonusBullet();
+    collisionBonusBullet();
+}
+
+// update player information ---------------------------------------------------------------------------
 const scoreValue = document.querySelector(".scoreValue");
 const bulletsValue = document.querySelector(".bulletsValue");
 const hpValue = document.querySelector(".hpValue");
@@ -60,7 +155,7 @@ function updatePlayerInfo() {
     hpValue.innerText = player.hp;
 }
 
-// Random number
+// Random number ---------------------------------------------------------------------------
 
 function getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -102,7 +197,7 @@ function update() {
     gameOver();
 }
 
-// Render
+// Render ---------------------------------------------------------------------------
 
 const asteroidImg = new Image();
 asteroidImg.src = 'image/asteroidImg.jpg';
@@ -157,5 +252,7 @@ function render() {
 
     ctx.beginPath();
     renderAsteroidArr();
+    renderBullets();
+    renderBonusBullet();
     ctx.closePath();
 }
